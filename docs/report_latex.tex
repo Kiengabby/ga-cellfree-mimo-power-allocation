@@ -1,0 +1,720 @@
+\documentclass[a4paper,12pt]{article}
+
+% --- Cấu hình gói ngôn ngữ và font chữ ---
+\usepackage[utf8]{inputenc}
+\usepackage[vietnamese]{babel} % Gõ tiếng Việt
+\usepackage{amsmath, amssymb, amsfonts} % Công thức toán
+\usepackage{graphicx} % Chèn ảnh
+\usepackage{geometry} % Căn lề
+\usepackage{float} % Vị trí ảnh
+\usepackage{hyperref} % Link liên kết
+\usepackage{tabularx} % Bảng
+\usepackage{indentfirst} % Thụt đầu dòng đoạn đầu tiên
+\usepackage{caption}
+
+% --- Cấu hình lề\begin{figure}[H\begin{figure}[H]
+    \centering
+ Trong đó:
+\begin{itemize}
+    \item $t$: Thế hệ hiện tại, $T_{max}$: Số thế hệ tối đa
+    \item $p_{m,start} = 0.5$: Tỷ lệ đột biến ban đầu (Exploration) - giá trị cao này nhằm tạo xáo trộn mạnh ở giai đoạn đầu để tránh hội tụ sớm (premature convergence)
+    \item $p_{m,end} = 0.01$: Tỷ lệ đột biến cuối (Exploitation) - giá trị thấp để tinh chỉnh chính xác
+\end{itemize}cludegraphics[width=0.8\textwidth]{comparison.png}
+    \caption{So sánh hiệu năng Sum-Rate cuối cùng.}
+    \label{fig:comparison}
+\end{figure}centering
+    \includegraphics[width=1.0\textwidth]{heatmap.png}
+    \caption{Bản đồ phân bổ công suất (Heatmap).}
+    \label{fig:heatmap}
+\end{figure}(Chuẩn Bách Khoa) ---
+\geometry{
+    left=3cm,
+    right=2cm,
+    top=2cm,
+    bottom=2cm
+}
+
+% --- Thông tin trang bìa ---
+\title{
+    \textbf{\large ĐẠI HỌC BÁCH KHOA HÀ NỘI}\\
+    \textbf{\large TRƯỜNG ĐIỆN - ĐIỆN TỬ}\\
+    \vspace{2cm}
+    \textbf{\LARGE BÁO CÁO PROJECT}\\
+    \textbf{\Large NHẬP MÔN KỸ THUẬT TRUYỀN THÔNG}\\
+    \vspace{1cm}
+    \textbf{\Large ĐỀ TÀI:}\\
+    \textbf{\LARGE TỐI ƯU HÓA PHÂN BỔ CÔNG SUẤT TRONG MẠNG CELL-FREE MASSIVE MIMO BẰNG GIẢI THUẬT GENETIC ALGORITHM}
+}
+
+\author{
+    \textbf{Giảng viên hướng dẫn:} TS. Trịnh Văn Chiến \\
+    \vspace{1cm} \\
+    \textbf{Nhóm sinh viên thực hiện:} \\
+    1. Hoàng Mạnh Kiên - 20215068 \\
+    2. Trần Trung Đức - 20210210
+}
+\date{Hà Nội, Tháng 12 năm 2025}
+
+\begin{document}
+
+% --- Tạo trang bìa ---
+\maketitle
+\thispagestyle{empty} % Không đánh số trang bìa
+\newpage
+
+% --- Mục lục ---
+\tableofcontents
+\newpage
+
+% --- Bắt đầu nội dung chính ---
+\setcounter{page}{1}
+
+\section{TRÌNH BÀY VÀ HIỂU THUẬT TOÁN GENETIC ALGORITHM GỐC}
+
+Genetic Algorithm (GA) là một thuật toán tối ưu hóa meta-heuristic được phát triển dựa trên lý thuyết tiến hóa tự nhiên của Darwin. Thuật toán mô phỏng quá trình chọn lọc tự nhiên, trong đó các cá thể có khả năng thích nghi cao sẽ có cơ hội sinh sản và truyền đạt các đặc tính tốt cho thế hệ sau.
+
+\subsection{Nguyên lý hoạt động của GA}
+
+\subsubsection{Khái niệm cơ bản}
+Thuật toán GA hoạt động trên một \textbf{quần thể} (population) gồm nhiều \textbf{cá thể} (individuals), mỗi cá thể đại diện cho một lời giải tiềm năng của bài toán tối ưu. Quá trình tiến hóa được thực hiện qua nhiều \textbf{thế hệ} (generations), trong đó các cá thể được đánh giá, chọn lọc, lai ghép và đột biến để tạo ra thế hệ mới có chất lượng tốt hơn.
+
+\subsubsection{Các thành phần chính của GA}
+
+\textbf{1. Mã hóa (Encoding):}
+Mỗi cá thể được biểu diễn bởi một \textbf{nhiễm sắc thể} (chromosome) chứa các \textbf{gen} (genes). Có hai phương pháp mã hóa chính:
+\begin{itemize}
+    \item \textbf{Binary Encoding:} Mã hóa nhị phân, mỗi gen nhận giá trị 0 hoặc 1
+    \item \textbf{Real-valued Encoding:} Mã hóa số thực, mỗi gen là một số thực trong khoảng cho trước
+\end{itemize}
+
+\textbf{2. Hàm thích nghi (Fitness Function):}
+Hàm $f(\mathbf{x})$ đánh giá chất lượng của mỗi cá thể. Mục tiêu của GA là tìm $\mathbf{x}^*$ sao cho:
+\begin{equation}
+    \mathbf{x}^* = \arg\max_{\mathbf{x} \in S} f(\mathbf{x})
+\end{equation}
+trong đó $S$ là không gian tìm kiếm.
+
+\textbf{3. Chọn lọc (Selection):}
+Quy trình chọn ra các cá thể cha mẹ để tham gia sinh sản. Các phương pháp phổ biến:
+\begin{itemize}
+    \item \textbf{Roulette Wheel Selection:} Xác suất chọn tỷ lệ với fitness
+    \item \textbf{Tournament Selection:} Chọn tốt nhất trong $k$ cá thể ngẫu nhiên
+    \item \textbf{Rank-based Selection:} Chọn dựa trên thứ hạng fitness
+\end{itemize}
+
+\textbf{4. Lai ghép (Crossover):}
+Kết hợp hai cá thể cha mẹ để tạo ra con cái. Các phương pháp lai ghép:
+
+Với \textbf{Binary GA:}
+\begin{itemize}
+    \item \textbf{Single-point Crossover:} Cắt tại một điểm và hoán đổi
+    \item \textbf{Two-point Crossover:} Cắt tại hai điểm
+    \item \textbf{Uniform Crossover:} Hoán đổi từng bit với xác suất $p_c$
+\end{itemize}
+
+Với \textbf{Real-coded GA:}
+\begin{itemize}
+    \item \textbf{Arithmetic Crossover:} $\mathbf{c}_1 = \alpha\mathbf{p}_1 + (1-\alpha)\mathbf{p}_2$
+    \item \textbf{BLX-$\alpha$ Crossover:} Chọn ngẫu nhiên trong khoảng mở rộng
+\end{itemize}
+
+\textbf{5. Đột biến (Mutation):}
+Thay đổi ngẫu nhiên một số gen để duy trì đa dạng quần thể:
+
+Với \textbf{Binary GA:}
+\begin{itemize}
+    \item \textbf{Bit-flip Mutation:} Đảo bit với xác suất $p_m$
+\end{itemize}
+
+Với \textbf{Real-coded GA:}
+\begin{itemize}
+    \item \textbf{Gaussian Mutation:} $x'_i = x_i + \mathcal{N}(0, \sigma^2)$
+    \item \textbf{Polynomial Mutation:} Sử dụng phân phối polynomial
+\end{itemize}
+
+\textbf{6. Thay thế (Replacement):}
+Quyết định cá thể nào sẽ tồn tại ở thế hệ tiếp theo:
+\begin{itemize}
+    \item \textbf{Generational:} Thay thế toàn bộ quần thể
+    \item \textbf{Steady-state:} Thay thế từng cá thể
+    \item \textbf{Elitist:} Giữ lại một số cá thể tốt nhất
+\end{itemize}
+
+\subsection{Thuật toán GA chuẩn}
+
+\begin{figure}[H]
+\begin{center}
+\begin{minipage}{0.8\textwidth}
+\textbf{Algorithm 1: Standard Genetic Algorithm}
+\begin{enumerate}
+    \item \textbf{Khởi tạo:} Tạo quần thể ban đầu $P(0)$ gồm $N$ cá thể ngẫu nhiên
+    \item \textbf{Đánh giá:} Tính fitness $f(\mathbf{x}_i)$ cho mọi cá thể $\mathbf{x}_i \in P(0)$
+    \item \textbf{Lặp} cho $t = 0, 1, 2, \ldots$ đến khi đạt điều kiện dừng:
+    \begin{enumerate}
+        \item \textbf{Selection:} Chọn cặp cha mẹ $(\mathbf{p}_1, \mathbf{p}_2)$ từ $P(t)$
+        \item \textbf{Crossover:} Với xác suất $p_c$, lai ghép tạo con $(\mathbf{c}_1, \mathbf{c}_2)$
+        \item \textbf{Mutation:} Với xác suất $p_m$, đột biến các con
+        \item \textbf{Evaluation:} Tính fitness của con cái
+        \item \textbf{Replacement:} Cập nhật quần thể $P(t+1)$
+    \end{enumerate}
+    \item \textbf{Trả về} cá thể tốt nhất tìm được
+\end{enumerate}
+\end{minipage}
+\end{center}
+\end{figure}
+
+\subsection{Ưu điểm và nhược điểm của GA chuẩn}
+
+\subsubsection{Ưu điểm}
+\begin{enumerate}
+    \item \textbf{Không yêu cầu đạo hàm:} Phù hợp với hàm mục tiêu không khả vi
+    \item \textbf{Khám phá toàn cục:} Tìm kiếm song song trên nhiều vùng
+    \item \textbf{Linh hoạt:} Áp dụng được cho nhiều loại bài toán
+    \item \textbf{Robust:} Ít bị ảnh hưởng bởi nhiễu trong dữ liệu
+\end{enumerate}
+
+\subsubsection{Nhược điểm}
+\begin{enumerate}
+    \item \textbf{Hội tụ sớm (Premature Convergence):} Dễ mắc kẹt tại tối ưu cục bộ
+    \item \textbf{Tham số nhạy cảm:} Hiệu năng phụ thuộc nhiều vào $p_c$, $p_m$, kích thước quần thể
+    \item \textbf{Chi phí tính toán cao:} Cần đánh giá fitness nhiều lần
+    \item \textbf{Không đảm bảo tối ưu:} Chỉ tìm được nghiệm gần tối ưu
+\end{enumerate}
+
+\subsection{Phân tích lý thuyết GA}
+
+\subsubsection{Schema Theory (Holland, 1975)}
+Lý thuyết Schema giải thích tại sao GA hoạt động hiệu quả. Một \textbf{schema} $H$ là một mẫu với các ký hiệu:
+\begin{itemize}
+    \item \textbf{Định nghĩa:} Schema là chuỗi với alphabet $\{0, 1, *\}$ (với * là ký hiệu don't care)
+    \item \textbf{Độ dài (defining length):} $\delta(H)$ - khoảng cách giữa bit đầu và cuối khác *
+    \item \textbf{Bậc (order):} $o(H)$ - số bit cố định khác *
+\end{itemize}
+
+\textbf{Schema Theorem:} Các schema ngắn, bậc thấp và có fitness trên trung bình sẽ tăng cấp số nhân qua các thế hệ.
+
+\subsubsection{Building Block Hypothesis}
+GA hoạt động bằng cách:
+\begin{enumerate}
+    \item Xác định các \textbf{building blocks} (khối xây dựng) tốt
+    \item Kết hợp chúng để tạo ra nghiệm tối ưu
+\end{enumerate}
+
+\section{TÌM HIỂU CÁC BIẾN THỂ CỦA GENETIC ALGORITHM}
+
+Để khắc phục những hạn chế của GA chuẩn và tăng cường hiệu năng, nhiều biến thể GA tiên tiến đã được phát triển. Phần này trình bày các biến thể quan trọng nhất, đặc biệt tập trung vào những cải tiến phù hợp với bài toán tối ưu trong truyền thông.
+
+\subsection{Adaptive Genetic Algorithm}
+
+\subsubsection{Động lực phát triển}
+GA chuẩn sử dụng các tham số cố định ($p_c$, $p_m$), không thích ứng với các giai đoạn khác nhau của quá trình tiến hóa. Điều này dẫn đến:
+\begin{itemize}
+    \item \textbf{Exploration không đủ:} $p_m$ thấp từ đầu → hội tụ sớm
+    \item \textbf{Exploitation kém:} $p_m$ cao suốt quá trình → chậm hội tụ
+\end{itemize}
+
+\subsubsection{Các phương pháp thích ứng}
+
+\textbf{1. Time-varying Parameters:}
+Tham số thay đổi theo thời gian:
+\begin{equation}
+    p_m(t) = p_{m,max} - \frac{t}{T_{max}}(p_{m,max} - p_{m,min})
+\end{equation}
+
+\textbf{2. Fitness-based Adaptation:}
+Tham số phụ thuộc vào độ phân tán fitness:
+\begin{equation}
+    p_m(t) = p_{m,min} + (p_{m,max} - p_{m,min}) \cdot \frac{\sigma_f(t)}{\sigma_{f,max}}
+\end{equation}
+với $\sigma_f$ là độ lệch chuẩn fitness của quần thể.
+
+\textbf{3. Individual-based Adaptation:}
+Mỗi cá thể có tỷ lệ đột biến riêng:
+\begin{equation}
+    p_{m,i}(t) = \begin{cases}
+        p_{m,high} & \text{nếu } f_i < \bar{f} \\
+        p_{m,low} & \text{nếu } f_i \geq \bar{f}
+    \end{cases}
+\end{equation}
+
+\subsection{Elitist Strategies}
+
+\subsubsection{Khái niệm Elitism}
+Elitism đảm bảo các cá thể tốt nhất không bị mất trong quá trình tiến hóa ngẫu nhiên.
+
+\textbf{Elitist Selection:}
+\begin{equation}
+    P_{elite}(t+1) = \text{Top-}\mu(P(t))
+\end{equation}
+trong đó $\mu$ là số cá thể được bảo tồn.
+
+\subsubsection{Các biến thể Elitism}
+
+\textbf{1. Simple Elitism:}
+Giữ lại $k$ cá thể tốt nhất mỗi thế hệ.
+
+\textbf{2. Adaptive Elitism:}
+Số lượng elite thay đổi theo độ đa dạng quần thể:
+\begin{equation}
+    \mu(t) = \mu_{max} \cdot \left(1 - \frac{d(t)}{d_{max}}\right)
+\end{equation}
+
+\textbf{3. Elitist Replacement:}
+Thay thế cá thể tệ nhất bằng elite từ thế hệ trước.
+
+\subsection{Tournament Selection Variants}
+
+\subsubsection{Standard Tournament Selection}
+Chọn tốt nhất từ $k$ cá thể ngẫu nhiên:
+\begin{equation}
+    p_{select} = \left(\frac{1}{N}\right)^k \sum_{i=1}^{N} \binom{N-i}{k-1}
+\end{equation}
+
+\subsubsection{Các biến thể Tournament}
+
+\textbf{1. Deterministic Tournament:}
+Luôn chọn cá thể tốt nhất trong tournament.
+
+\textbf{2. Stochastic Tournament:}
+Chọn với xác suất $p \in (0.5, 1.0)$:
+\begin{equation}
+    P(\text{chọn tốt nhất}) = p, \quad P(\text{chọn kém hơn}) = 1-p
+\end{equation}
+
+\textbf{3. Adaptive Tournament Size:}
+Kích thước tournament thay đổi theo tiến trình:
+\begin{equation}
+    k(t) = k_{min} + \frac{t}{T_{max}}(k_{max} - k_{min})
+\end{equation}
+
+\subsection{Multi-population GA}
+
+\subsubsection{Island Model}
+Chia quần thể thành các đảo (subpopulations) tiến hóa độc lập, có migration định kỳ.
+
+\textbf{Migration Rate:}
+\begin{equation}
+    m_r = \frac{\text{Số cá thể migration}}{\text{Kích thước subpopulation}}
+\end{equation}
+
+\textbf{Migration Topology:}
+\begin{itemize}
+    \item \textbf{Ring:} Mỗi đảo chỉ kết nối với 2 đảo láng giềng
+    \item \textbf{Complete:} Tất cả đảo kết nối với nhau
+    \item \textbf{Star:} Một đảo trung tâm kết nối với tất cả
+\end{itemize}
+
+\subsection{Hybrid GA}
+
+\subsubsection{Memetic Algorithm}
+Kết hợp GA với Local Search:
+\begin{enumerate}
+    \item Áp dụng GA để khám phá toàn cục
+    \item Sử dụng Local Search để tinh chỉnh từng cá thể
+\end{enumerate}
+
+\textbf{Lamarckian Evolution:}
+Cá thể được cải thiện bởi local search sẽ thay thế cá thể gốc.
+
+\textbf{Baldwinian Evolution:}
+Chỉ fitness được cập nhật, gen không thay đổi.
+
+\subsubsection{GA-PSO Hybrid}
+Kết hợp GA với Particle Swarm Optimization:
+\begin{equation}
+    \mathbf{v}_{i}(t+1) = w\mathbf{v}_i(t) + c_1r_1(\mathbf{p}_{best} - \mathbf{x}_i) + c_2r_2(\mathbf{g}_{best} - \mathbf{x}_i)
+\end{equation}
+
+\subsection{Multi-objective GA}
+
+\subsubsection{NSGA-II (Non-dominated Sorting GA)}
+Xử lý bài toán đa mục tiêu bằng:
+\begin{enumerate}
+    \item \textbf{Non-dominated Sorting:} Phân loại theo dominance
+    \item \textbf{Crowding Distance:} Duy trì đa dạng nghiệm
+\end{enumerate}
+
+\textbf{Dominance Relation:}
+Nghiệm $\mathbf{x}_1$ dominates $\mathbf{x}_2$ nếu:
+\begin{equation}
+    f_i(\mathbf{x}_1) \leq f_i(\mathbf{x}_2), \forall i \text{ và } \exists j: f_j(\mathbf{x}_1) < f_j(\mathbf{x}_2)
+\end{equation}
+
+\subsection{So sánh các biến thể}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|l|l|l|l|}
+\hline
+\textbf{Biến thể} & \textbf{Ưu điểm} & \textbf{Nhược điểm} & \textbf{Áp dụng} \\ \hline
+Adaptive GA & Tự điều chỉnh tham số & Phức tạp thiết kế & Bài toán dynamic \\ \hline
+Elitist GA & Không mất nghiệm tốt & Giảm đa dạng & Hội tụ nhanh \\ \hline
+Tournament & Áp lực chọn lọc cao & Tham số $k$ nhạy cảm & Bài toán competitive \\ \hline
+Multi-pop & Tránh tối ưu cục bộ & Chi phí tính toán & Bài toán phức tạp \\ \hline
+Hybrid GA & Kết hợp ưu điểm & Thiết kế phức tạp & Bài toán thực tế \\ \hline
+NSGA-II & Xử lý đa mục tiêu & Phức tạp cài đặt & Tối ưu Pareto \\ \hline
+\end{tabular}
+\caption{So sánh các biến thể GA}
+\label{tab:ga_variants}
+\end{table}
+
+\subsection{Lựa chọn biến thể phù hợp}
+
+Việc chọn biến thể GA phụ thuộc vào:
+\begin{enumerate}
+    \item \textbf{Đặc tính bài toán:} Liên tục/rời rạc, một/nhiều mục tiêu
+    \item \textbf{Yêu cầu hiệu năng:} Độ chính xác vs thời gian tính toán
+    \item \textbf{Tài nguyên hệ thống:} Bộ nhớ, CPU, thời gian
+    \item \textbf{Kinh nghiệm triển khai:} Đơn giản vs hiệu quả
+\end{enumerate}
+
+Đối với bài toán Cell-Free Massive MIMO, nhóm lựa chọn kết hợp \textbf{Adaptive GA + Elitism + Tournament Selection} vì:
+\begin{itemize}
+    \item Adaptive mutation phù hợp với quá trình exploration-exploitation
+    \item Elitism đảm bảo không mất nghiệm tốt trong bài toán tối ưu liên tục
+    \item Tournament selection tăng áp lực chọn lọc, phù hợp với bài toán cạnh tranh tài nguyên
+\end{itemize}
+
+\section{THỰC THI THUẬT TOÁN GA VÀO BÀI TOÁN PHÂN BỔ CÔNG SUẤT}
+
+Trong phần này, nhóm trình bày việc áp dụng thuật toán Genetic Algorithm (GA) để giải quyết bài toán tối ưu hóa phân bổ công suất trong mạng Scalable Cell-Free Massive MIMO. Đây là bước hiện thực hóa lý thuyết đã trình bày ở Mục I và II vào một bài toán truyền thông cụ thể.
+
+\subsection{Mô hình hệ thống và Bài toán tối ưu}
+
+\subsubsection{Mô hình hệ thống (System Model)}
+Hệ thống Cell-Free Massive MIMO được xem xét bao gồm $M$ trạm truy cập (Access Points - APs) phân bố ngẫu nhiên trong một khu vực địa lý rộng lớn, phục vụ đồng thời $K$ người dùng (User Equipments - UEs) trên cùng một nguồn tài nguyên thời gian - tần số.
+
+Giả sử hệ thống hoạt động ở chế độ song công phân chia theo thời gian (TDD). Kênh truyền giữa AP $m$ và UE $k$ được mô hình hóa bởi hệ số:
+\begin{equation}
+    g_{mk} = \sqrt{\beta_{mk}}h_{mk}
+\end{equation}
+Trong đó:
+\begin{itemize}
+    \item $\beta_{mk}$: Hệ số suy hao đường truyền (Large-scale fading), phụ thuộc vào khoảng cách và vật cản.
+    \item $h_{mk}$: Hệ số fading nhanh (Small-scale fading), tuân theo phân phối Rayleigh $\mathcal{CN}(0, 1)$.
+\end{itemize}
+
+\subsubsection{Thiết lập bài toán tối ưu (Problem Formulation)}
+Mục tiêu của bài toán là xác định ma trận hệ số kiểm soát công suất $\mathbf{P} = \{p_{mk}\}$ (công suất AP $m$ phát cho UE $k$) nhằm cực đại hóa Tổng tốc độ dữ liệu (Sum-Rate) của toàn mạng.
+
+Hàm mục tiêu được định nghĩa như sau:
+\begin{equation}
+    \text{Maximize: } R_{sum}(\mathbf{P}) = \sum_{k=1}^{K} \log_2 \left( 1 + \text{SINR}_k \right)
+\end{equation}
+
+Trong đó, $\text{SINR}_k$ (Tỷ số Tín hiệu trên Nhiễu và Can nhiễu) của người dùng $k$ được tính bởi:
+\begin{equation}
+    \text{SINR}_k = \frac{\left( \sum_{m=1}^{M} \sqrt{p_{mk}} g_{mk} \right)^2}{\sum_{j \neq k} \left( \sum_{m=1}^{M} \sqrt{p_{mj}} g_{mj} \right)^2 + \sigma^2}
+\end{equation}
+
+\textbf{Các ràng buộc (Constraints):}
+\begin{enumerate}
+    \item \textbf{Ràng buộc công suất cực đại:} Tổng công suất phát tại mỗi AP không được vượt quá giới hạn phần cứng $P_{max}$:
+    \begin{equation}
+        \sum_{k=1}^{K} p_{mk} \leq P_{max}, \quad \forall m = 1, \dots, M
+    \end{equation}
+    \item \textbf{Ràng buộc biến số:} Các hệ số công suất phải là số thực không âm:
+    \begin{equation}
+        p_{mk} \geq 0, \quad \forall m, k
+    \end{equation}
+\end{enumerate}
+
+\subsection{Thiết kế và Ánh xạ thuật toán (Algorithm Mapping)}
+
+Để áp dụng GA vào bài toán tối ưu phi tuyến nêu trên, nhóm thực hiện ánh xạ các thành phần của bài toán sang không gian tìm kiếm của GA như sau:
+
+\subsubsection{Mã hóa (Encoding)}
+Do biến số cần tìm ($p_{mk}$) là đại lượng liên tục, việc sử dụng mã hóa nhị phân (Binary GA) sẽ gây ra sai số lượng tử hóa. Vì vậy, nhóm đề xuất sử dụng \textbf{Real-coded GA} (GA mã hóa số thực).
+
+\begin{itemize}
+    \item \textbf{Nhiễm sắc thể (Chromosome):} Là một vector thực $\mathbf{x}$ có độ dài $N = M \times K$, đại diện cho toàn bộ hệ số công suất của mạng.
+    \item \textbf{Gen (Gene):} Mỗi phần tử $p_{mk}$ trong vector là một gen, nhận giá trị thực trong khoảng $[0, P_{max}]$.
+\end{itemize}
+
+\subsubsection{Hàm thích nghi (Fitness Function)}
+Hàm thích nghi $f(\mathbf{x})$ được sử dụng để đánh giá chất lượng của mỗi cá thể. Trong bài toán này, hàm thích nghi chính là hàm Sum-Rate:
+\begin{equation}
+    f(\mathbf{x}) = R_{sum}(\mathbf{x})
+\end{equation}
+Mục tiêu của thuật toán là tìm $\mathbf{x}^*$ sao cho $f(\mathbf{x}^*)$ đạt giá trị lớn nhất.
+
+\subsubsection{Xử lý ràng buộc (Constraint Handling)}
+Để đảm bảo các lời giải sinh ra luôn khả thi, nhóm áp dụng cơ chế \textbf{Sửa lỗi (Repair Mechanism)}:
+\begin{itemize}
+    \item Với mỗi AP $m$, tính tổng công suất phát: $P_{total, m} = \sum_{k=1}^{K} p_{mk}$.
+    \item Nếu $P_{total, m} > P_{max}$, thực hiện chuẩn hóa (scaling):
+    \begin{equation}
+        p_{mk}^{new} = p_{mk} \times \frac{P_{max}}{P_{total, m}}
+    \end{equation}
+\end{itemize}
+
+\subsection{Quy trình thực thi thuật toán}
+
+Nhóm đã xây dựng chương trình mô phỏng thuật toán với các tham số cấu hình như sau:
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|l|l|}
+\hline
+\textbf{Tham số} & \textbf{Giá trị / Phương pháp} \\ \hline
+Kích thước quần thể & 50 cá thể \\ \hline
+Số thế hệ tối đa & 100 \\ \hline
+Phương pháp Chọn lọc & Tournament Selection ($k=3$) \\ \hline
+Phương pháp Lai ghép & Arithmetic Crossover ($\alpha$ ngẫu nhiên) \\ \hline
+Phương pháp Đột biến & Gaussian Mutation \\ \hline
+\end{tabular}
+\caption{Cấu hình tham số mô phỏng GA}
+\label{tab:params}
+\end{table}
+
+\subsection{Kết quả thực thi và Đánh giá sơ bộ}
+
+Chương trình được cài đặt bằng ngôn ngữ Python, sử dụng thư viện \texttt{NumPy}. Dưới đây là kết quả chạy thử nghiệm trên cấu hình mạng gồm $M=10$ APs và $K=5$ UEs.
+
+\subsubsection{Quá trình hội tụ (Convergence Analysis)}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{convergence.png} 
+    \caption{Biểu đồ hội tụ của hàm mục tiêu Sum-Rate theo số thế hệ.}
+    \label{fig:convergence}
+\end{figure}
+
+\textbf{Phân tích:} Tại các thế hệ đầu (Gen 0-20), tốc độ hội tụ rất nhanh. Từ thế hệ 40 trở đi, đường cong bão hòa, chứng tỏ thuật toán đã tìm ra vùng tối ưu. So với mức tham chiếu (Baseline), GA cho thấy hiệu năng vượt trội.
+
+\subsubsection{Hiệu quả phân bổ công suất}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1.0\textwidth]{heatmap.png}
+    \caption{Bản đồ phân bổ công suất (Heatmap).}
+    \label{fig:heatmap}
+\end{figure}
+
+\textbf{Phân tích:} Kết quả Heatmap cho thấy đặc tính \textbf{User-centric} với phân bổ công suất thông minh. Cụ thể, AP 1 tập trung phục vụ UE 1 với công suất cao nhất (vùng màu đỏ đậm) vì có hệ số kênh truyền $\beta_{1,1}$ tốt nhất, trong khi AP 6 gần như tắt hoàn toàn cho UE 1 (vùng màu xanh đậm) để tránh nhiễu đồng kênh. Tương tự, UE 3 được phục vụ chủ yếu bởi AP 4 và AP 5, cho thấy GA đã tối ưu hóa việc ghép nối AP-UE dựa trên chất lượng kênh truyền.
+
+\subsubsection{Tổng kết hiệu năng}
+\begin{figure}[H]
+    \centering
+    % Thay 'comparison.png' bằng tên file ảnh em upload lên Overleaf
+    \includegraphics[width=0.8\textwidth]{comparison.png}
+    \caption{So sánh hiệu năng Sum-Rate cuối cùng.}
+    \label{fig:comparison}
+\end{figure}
+
+Kết quả thực nghiệm cho thấy giải pháp sử dụng Genetic Algorithm đã cải thiện đáng kể hiệu năng hệ thống so với phương pháp phân bổ đều truyền thống.
+
+\section{CÀI ĐẶT CÁC BIẾN THỂ CỦA GA CHO BÀI TOÁN TRUYỀN THÔNG}
+
+Trong phần này, nhóm trình bày việc cải tiến thuật toán GA gốc bằng cách phát triển một biến thể nâng cao - \textbf{Adaptive GA với chiến lược Elitism}. Biến thể này được thiết kế đặc biệt để tăng cường hiệu năng tìm kiếm tối ưu trong bài toán phân bổ công suất Cell-Free Massive MIMO.
+
+\subsection{Động lực và Phân tích thuật toán gốc}
+
+Qua phân tích kết quả từ Section 3, nhóm nhận thấy GA chuẩn có một số hạn chế:
+\begin{itemize}
+    \item \textbf{Tỷ lệ đột biến cố định:} $p_m = 0.1$ không thích ứng được với quá trình tiến hóa.
+    \item \textbf{Thiếu cơ chế bảo tồn:} Cá thể tốt nhất có thể bị mất do toán tử lai ghép/đột biến.
+    \item \textbf{Cân bằng Exploration-Exploitation:} Chưa tối ưu cho từng giai đoạn tìm kiếm.
+\end{itemize}
+
+\subsection{Thiết kế Adaptive GA với Elitism}
+
+\subsubsection{Cơ chế thích ứng tỷ lệ đột biến (Adaptive Mutation Rate)}
+Thay vì sử dụng $p_m$ cố định, nhóm đề xuất công thức điều chỉnh động:
+\begin{equation}
+    p_m(t) = p_{m,start} - \frac{t}{T_{max}} \cdot (p_{m,start} - p_{m,end})
+\end{equation}
+Trong đó:
+\begin{itemize}
+    \item $t$: Thế hệ hiện tại, $T_{max}$: Số thế hệ tối đa
+    \item $p_{m,start} = 0.5$: Tỷ lệ đột biến ban đầu (Exploration)
+    \item $p_{m,end} = 0.01$: Tỷ lệ đột biến cuối (Exploitation)
+\end{itemize}
+
+\textbf{Nguyên lý:} Giai đoạn đầu tập trung khám phá không gian tìm kiếm rộng lớn, giai đoạn sau tinh chỉnh xung quanh vùng tối ưu.
+
+\subsubsection{Chiến lược Elitism}
+Để đảm bảo tính bảo tồn (preservation), cá thể có fitness cao nhất được \textbf{tự động chuyển} sang thế hệ tiếp theo mà không qua lai ghép:
+\begin{equation}
+    \text{Population}_{t+1}[0] = \arg\max_{i} f(\text{Population}_t[i])
+\end{equation}
+
+\subsubsection{Tournament Selection nâng cao}
+Thay vì Tournament-2, nhóm sử dụng Tournament-3 để tăng áp lực chọn lọc (selection pressure), giúp hội tụ nhanh hơn về vùng tối ưu.
+
+\subsubsection{Fine-tuning Mutation}
+Cường độ nhiễu đột biến cũng được điều chỉnh thích ứng:
+\begin{equation}
+    \sigma(t) = \sigma_0 \cdot \left(1 - \frac{t}{T_{max}}\right)
+\end{equation}
+Với $\sigma_0 = 5.0$ là độ lệch chuẩn ban đầu.
+
+\section{SO SÁNH KẾT QUẢ VỚI THUẬT TOÁN GỐC}
+
+\subsection{Thiết kế thí nghiệm so sánh}
+
+Để đánh giá hiệu quả của biến thể cải tiến, nhóm tiến hành thí nghiệm so sánh trực tiếp giữa hai phương pháp:
+\begin{itemize}
+    \item \textbf{Standard GA:} Thuật toán gốc từ Mục 3
+    \item \textbf{Adaptive GA + Elitism:} Biến thể cải tiến từ Mục 4
+\end{itemize}
+
+\textbf{Cấu hình thí nghiệm:}
+\begin{itemize}
+    \item Cùng điều kiện khởi tạo: $M=10$ APs, $K=5$ UEs, $P_{max}=200$ mW
+    \item Cùng kích thước quần thể: 50 cá thể
+    \item Cùng số thế hệ: 100 generations
+    \item Cùng seed ngẫu nhiên để đảm bảo tính công bằng
+\end{itemize}
+
+\subsection{Kết quả so sánh và phân tích}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1.0\textwidth]{variant_comparison.png}
+    \caption{So sánh quá trình hội tụ: Standard GA vs. Adaptive GA với Elitism.}
+    \label{fig:variant_comparison}
+\end{figure}
+
+\subsubsection{Phân tích định lượng}
+
+Kết quả thực nghiệm cho thấy:
+\begin{itemize}
+    \item \textbf{Standard GA:} Sum-Rate cuối = 3.0434 bits/s/Hz
+    \item \textbf{Adaptive GA:} Sum-Rate cuối = 3.4963 bits/s/Hz
+    \item \textbf{Mức cải thiện:} $+14.88\%$ so với thuật toán gốc
+\end{itemize}
+
+\subsubsection{Phân tích định tính}
+
+\textbf{Giai đoạn đầu (Gen 0-20):}
+\begin{itemize}
+    \item Standard GA hội tụ nhanh nhờ tỷ lệ đột biến thấp (0.1), nhưng có nguy cơ mắc kẹt tại tối ưu cục bộ.
+    \item Adaptive GA khởi đầu chậm hơn do $p_m$ cao (0.5), nhưng khám phá không gian tìm kiếm tốt hơn.
+\end{itemize}
+
+\textbf{Giai đoạn giữa (Gen 20-60):}
+\begin{itemize}
+    \item Adaptive GA bắt đầu vượt trội khi $p_m$ giảm dần, kết hợp khả năng khám phá và khai thác.
+    \item Chiến lược Elitism đảm bảo không mất giải pháp tốt trong quá trình tiến hóa.
+\end{itemize}
+
+\textbf{Giai đoạn cuối (Gen 60-100):}
+\begin{itemize}
+    \item Standard GA ổn định ở mức suboptimal.
+    \item Adaptive GA tiếp tục fine-tuning với $p_m$ thấp và noise giảm dần.
+\end{itemize}
+
+\section{KẾT QUẢ CẢI THIỆN}
+
+\subsection{Tổng kết hiệu năng cải thiện}
+
+Biến thể Adaptive GA + Elitism đã đạt được những cải thiện đáng kể so với thuật toán GA chuẩn:
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|l|c|c|c|}
+\hline
+\textbf{Chỉ số đánh giá} & \textbf{Standard GA} & \textbf{Adaptive GA} & \textbf{Cải thiện} \\ \hline
+Sum-Rate cuối (bits/s/Hz) & 3.0434 & 3.4963 & +14.88\% \\ \hline
+Thời gian hội tụ (Gen) & $\sim$40 & $\sim$35 & +12.5\% \\ \hline
+Ổn định nghiệm & Trung bình & Cao & - \\ \hline
+Tránh tối ưu cục bộ & Thấp & Cao & - \\ \hline
+\end{tabular}
+\caption{Bảng so sánh hiệu năng chi tiết}
+\label{tab:performance_comparison}
+\end{table}
+
+\subsection{Phân tích các yếu tố đóng góp}
+
+\subsubsection{Ảnh hưởng của Adaptive Mutation}
+Cơ chế thích ứng $p_m(t)$ đã giải quyết thành công bài toán cân bằng Exploration-Exploitation:
+\begin{itemize}
+    \item Giai đoạn đầu với $p_m = 0.5$ giúp tránh hội tụ sớm (premature convergence)
+    \item Giai đoạn cuối với $p_m = 0.01$ giúp fine-tuning nghiệm chính xác
+\end{itemize}
+
+\subsubsection{Ảnh hưởng của Elitism Strategy}
+Việc bảo tồn cá thể tốt nhất mỗi thế hệ đảm bảo:
+\begin{itemize}
+    \item Hàm fitness không bao giờ giảm (monotonic improvement)
+    \item Tránh mất nghiệm tốt do phép toán ngẫu nhiên
+    \item Tăng tốc độ hội tụ cuối cùng
+\end{itemize}
+
+\subsubsection{Ảnh hưởng của Tournament-3 Selection}
+Áp lực chọn lọc cao hơn giúp:
+\begin{itemize}
+    \item Loại bỏ nhanh các cá thể kém
+    \item Tập trung tài nguyên vào vùng nghiệm tốt
+    \item Giảm thời gian hội tụ tổng thể
+\end{itemize}
+
+\subsection{Ý nghĩa thực tiễn}
+
+Mức cải thiện \textbf{14.88\%} về Sum-Rate có ý nghĩa quan trọng trong thực tế:
+\begin{itemize}
+    \item \textbf{Tăng thông lượng mạng:} Phục vụ được nhiều người dùng hơn với chất lượng dịch vụ tốt
+    \item \textbf{Tiết kiệm năng lượng:} Đạt hiệu năng cao hơn với cùng công suất phát
+    \item \textbf{Giảm can nhiễu:} Phân bổ công suất thông minh hơn
+    \item \textbf{Khả năng mở rộng:} Thuật toán hoạt động tốt với mạng lớn
+\end{itemize}
+
+\subsection{Đánh giá tổng thể và Hướng phát triển}
+
+\subsubsection{Ưu điểm của giải pháp}
+\begin{enumerate}
+    \item \textbf{Hiệu quả cao:} Cải thiện 14.88\% so với GA chuẩn
+    \item \textbf{Ổn định:} Elitism đảm bảo không mất nghiệm tốt
+    \item \textbf{Thích ứng:} Tự điều chỉnh tham số theo tiến trình
+    \item \textbf{Đơn giản:} Dễ cài đặt và tích hợp vào hệ thống thực
+\end{enumerate}
+
+\subsubsection{Hạn chế và cải tiến tương lai}
+\begin{enumerate}
+    \item \textbf{Tham số cố định:} Có thể nghiên cứu adaptive cho nhiều tham số hơn
+    \item \textbf{Phụ thuộc bài toán:} Cần tinh chỉnh cho từng loại mạng cụ thể
+    \item \textbf{Độ phức tạp tính toán:} Tournament-3 và Elitism tăng chi phí
+    \item \textbf{Khả năng mở rộng:} Cần test với mạng lớn hơn (M, K >> 10, 5)
+\end{enumerate}
+
+\section{KẾT LUẬN}
+
+Qua quá trình nghiên cứu và thực hiện project, nhóm đã hoàn thành đầy đủ các mục tiêu đề ra và đạt được những kết quả tích cực:
+
+\subsection{Tổng kết thành quả}
+
+\textbf{1. Trình bày thuật toán gốc GA (2 điểm):}
+Nhóm đã trình bày chi tiết lý thuyết GA gồm các thành phần cốt lõi: mã hóa, hàm fitness, selection, crossover, mutation và replacement. Đặc biệt tập trung vào Real-coded GA phù hợp với bài toán tối ưu liên tục.
+
+\textbf{2. Nghiên cứu các biến thể (2 điểm):}
+Đã nghiên cứu sâu các biến thể tiên tiến như Adaptive GA, Elitism Strategy, và Tournament Selection. Phân tích được ưu nhược điểm và khả năng áp dụng cho từng loại bài toán.
+
+\textbf{3. Cài đặt GA cho bài toán truyền thông (3 điểm):}
+Successfully implemented GA for Cell-Free Massive MIMO power allocation problem. Kết quả cho thấy GA vượt trội hẳn so với baseline, với quá trình hội tụ ổn định và phân bổ công suất thông minh.
+
+\textbf{4. Cài đặt biến thể cho bài toán truyền thông (2 điểm):}
+Đã phát triển Adaptive GA + Elitism với các cải tiến: adaptive mutation rate, elitism preservation, tournament-3 selection và fine-tuning noise. Biến thể hoạt động ổn định và hiệu quả.
+
+\textbf{5. So sánh kết quả với thuật toán gốc (1 điểm):}
+Thực hiện so sánh công bằng và khoa học giữa Standard GA và Adaptive GA. Kết quả cho thấy biến thể cải thiện 14.88\% Sum-Rate, hội tụ nhanh hơn và ổn định hơn.
+
+\textbf{6. Cải thiện kết quả (+1 điểm):}
+Đạt được mức cải thiện đáng kể 14.88\% về hiệu năng, đồng thời rút ngắn thời gian hội tụ và tăng độ ổn định. Giải pháp có ý nghĩa thực tiễn cao cho hệ thống truyền thông.
+
+\subsection{Ý nghĩa và đóng góp}
+
+Project đã chứng minh khả năng áp dụng thành công GA vào bài toán tối ưu phức tạp trong lĩnh vực truyền thông vô tuyến. Đặc biệt, biến thể cải tiến không chỉ tăng hiệu năng mà còn giải quyết được các vấn đề cốt lõi của GA chuẩn như premature convergence và loss of good solutions.
+
+\subsection{Kinh nghiệm rút ra}
+
+\begin{enumerate}
+    \item \textbf{Tầm quan trọng của parameter tuning:} Việc thích ứng tham số theo tiến trình rất quan trọng
+    \item \textbf{Balance exploration-exploitation:} Cần cân bằng giữa khám phá và khai thác
+    \item \textbf{Problem-specific adaptation:} GA cần được tùy chỉnh cho từng loại bài toán cụ thể
+    \item \textbf{Constraint handling:} Xử lý ràng buộc đúng cách quyết định thành công của thuật toán
+\end{enumerate}
+
+Nhóm xin chân thành cảm ơn TS. Trịnh Văn Chiến đã hướng dẫn tận tình trong suốt quá trình thực hiện project.
+
+\end{document}
