@@ -65,8 +65,8 @@ Maximize: **Sum-Rate** = Σ<sub>k=1</sub><sup>K</sup> log₂(1 + SINR<sub>k</sub
 ### 1. Clone repository
 
 ```bash
-git clone https://github.com/your-username/ga-power-allocation-cellfree.git
-cd ga-power-allocation-cellfree
+git clone https://github.com/Kiengabby/ga-cellfree-mimo-power-allocation.git
+cd ga-cellfree-mimo-power-allocation
 ```
 
 ### 2. Tạo môi trường ảo (khuyến nghị)
