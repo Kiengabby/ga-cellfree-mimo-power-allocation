@@ -1,0 +1,36 @@
+cff-version: 1.2.0
+title: >-
+  Genetic Algorithm for Power Allocation in Cell-Free
+  Massive MIMO Networks
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - given-names: Mạnh Kiên
+    family-names: Hoàng
+    email: kien.hm215068@sis.hust.edu.vn
+    affiliation: Hanoi University of Science and Technology
+    orcid: 'https://orcid.org/0000-0000-0000-0000'
+  - given-names: Trung Đức
+    family-names: Trần
+    email: duc.tt210210@sis.hust.edu.vn
+    affiliation: Hanoi University of Science and Technology
+repository-code: >-
+  https://github.com/Kiengabby/ga-cellfree-mimo-power-allocation
+abstract: >-
+  This repository contains the implementation of Genetic
+  Algorithm (GA) for optimizing power allocation in
+  Cell-Free Massive MIMO systems. The project includes
+  standard GA and adaptive GA variants with comprehensive
+  Vietnamese comments for educational purposes.
+keywords:
+  - genetic algorithm
+  - power allocation
+  - cell-free massive mimo
+  - optimization
+  - wireless communications
+  - resource allocation
+license: MIT
+version: 1.0.0
+date-released: '2025-01-18'
